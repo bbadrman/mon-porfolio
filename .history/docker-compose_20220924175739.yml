@@ -1,0 +1,68 @@
+version: '3'
+services:
+  web:
+    build: ./
+    ports:
+      - "89:80"
+    depends_on:
+      - db
+    expose:
+      - 9010
+    volumes:
+      - ./:/var/www/html/
+      - ./config/php.ini:/usr/local/etc/php/php.ini
+      - ./config/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      # - ./proxy/conf/nginx.conf:/etc/nginx/nginx.conf
+      # - ./proxy/certs:/etc/nginx/certs
+    networks:
+      - ecomSy_network
+
+  db:
+    image: mysql
+    ports:
+      - "3306:3306"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ecomSy_db
+      MYSQL_USER: badr
+      MYSQL_PASSWORD: 123456
+    volumes:
+      - "./db:/var/lib/mysql"
+    networks:
+      - ecomSy_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - '8880:80'
+    restart: always
+    environment:
+      PMA_HOST: db
+    depends_on:
+      - db
+    networks:
+      - ecomSy_network
+
+###> doctrine/doctrine-bundle ###
+  # database:
+  #   image: postgres:${POSTGRES_VERSION:-14}-alpine
+  #   environment:
+  #     POSTGRES_DB: ${POSTGRES_DB:-app}
+  #     # You should definitely change the password in production
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
+  #     POSTGRES_USER: ${POSTGRES_USER:-app}
+  #   volumes:
+  #     - db-data:/var/lib/postgresql/data:rw
+      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+      # - ./docker/db/data:/var/lib/postgresql/data:rw
+###< doctrine/doctrine-bundle ###
+
+networks:
+  ecomSy_network:
+    driver: bridge
+
+volumes:
+###> doctrine/doctrine-bundle ###
+  db-data:
+###< doctrine/doctrine-bundle ###
